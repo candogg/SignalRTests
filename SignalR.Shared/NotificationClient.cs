@@ -2,12 +2,13 @@
 using System;
 using System.Threading.Tasks;
 
-namespace NotificationClient
+namespace SignalR.Shared
 {
     public class NotificationClient
     {
         private readonly Action<string> messageCallback;
         private readonly Action<string> connectionIdReceivedCallback;
+        private HubConnection connection;
 
         public NotificationClient(Action<string> messageCallback, Action<string> connectionIdReceivedCallback)
         {
@@ -15,25 +16,36 @@ namespace NotificationClient
             this.connectionIdReceivedCallback = connectionIdReceivedCallback;
         }
 
-        public async Task Start()
+        public async Task StartAsync()
         {
+            await StopAsync();
+
             string url = "https://localhost:7217/notificationhub";
 
-            var hubConnection = new HubConnectionBuilder()
+            connection = new HubConnectionBuilder()
            .WithUrl(url)
            .Build();
 
-            hubConnection.On<string>("ReceiveConnectionId", connectionId =>
+            connection.On<string>("ReceiveConnectionId", connectionId =>
             {
                 connectionIdReceivedCallback?.Invoke(connectionId);
             });
 
-            hubConnection.On<string>("ReceiveNotification", update =>
+            connection.On<string>("ReceiveNotification", update =>
             {
                 messageCallback?.Invoke(update);
             });
 
-            await hubConnection.StartAsync();
+            await connection.StartAsync();
+        }
+
+        public async Task StopAsync()
+        {
+            if (connection == null || connection.State == HubConnectionState.Disconnected) return;
+
+            await connection.StopAsync();
+
+            await connection.DisposeAsync();
         }
     }
 }
