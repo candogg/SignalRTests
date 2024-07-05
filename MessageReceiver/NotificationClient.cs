@@ -36,7 +36,14 @@ namespace MessageReceiver
                 messageCallback?.Invoke(update);
             });
 
+            connection.Closed += Connection_Closed;
+
             await connection.StartAsync();
+        }
+
+        private Task Connection_Closed(Exception arg)
+        {
+            return Task.CompletedTask;
         }
 
         public async Task StopAsync()

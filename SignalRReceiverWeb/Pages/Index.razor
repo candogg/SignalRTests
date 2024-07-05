@@ -1,0 +1,169 @@
+﻿@*
+    Author: Can DOĞU
+    A realtime chat sample with SignalR / Blazor & .NET Core Web API
+*@
+
+@using Project.Shared.Extensions
+@using System.Collections.Concurrent
+@using Project.Shared.Items
+@using Project.Shared.Services.Instance
+
+@inject HttpClient Http
+
+@page "/"
+
+<PageTitle>Index</PageTitle>
+
+<MudTextField T="string" Disabled="@isInChat" Label="My Name Is" Variant="Variant.Text" @bind-Value="myName" Class="mb-5"></MudTextField>
+
+<MudButton OnClick="StartChatting" Disabled="@isInChat">Start Chatting</MudButton>
+
+<MudTextField T="string" Label="My Chat Id" Variant="Variant.Text" @bind-Value="connectionIdField" Disabled="true" Immediate="true" Class="mb-5"></MudTextField>
+
+<MudTextField T="string" Label="Text To Send" Disabled="!isInChat" Variant="Variant.Text" @bind-Value="textToSend" Class="mb-5"></MudTextField>
+
+<MudStack Spacing="5">
+    @if (userList != null)
+    {
+        @foreach (var item in userList)
+        {
+            <MudButton Style="background-color: #FEF8DC" Class="pa-3 mb-5" @onclick="@(() => SendMessage(item.Key))">@item.Value.UserName</MudButton>
+        }
+    }
+</MudStack>
+
+<MudStack Spacing="5">
+    @if (messageList != null)
+    {
+        @foreach (var item in messageList)
+        {
+            <MudPaper Style="background-color: #DCE5FE" Class="pa-3">@item.ToString()</MudPaper>
+        }
+    }
+</MudStack>
+
+@code {
+    private NotificationClient? notificationClient;
+    private string connectionIdField = string.Empty;
+    private string myName = string.Empty;
+    private string textToSend = string.Empty;
+    private List<MessageItem>? messageList;
+    private ConcurrentDictionary<string, ChatUser>? userList;
+    private ChatUser? myUser;
+    private bool isInChat;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userList = new ConcurrentDictionary<string, ChatUser>();
+        messageList = new List<MessageItem>();
+
+        notificationClient = new NotificationClient(MessageCallback, ConnectionIdReceivedCallback, UserConnectedCallback, UserDisconnectedCallback);
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void StartChatting()
+    {
+        if (notificationClient == null) return;
+
+        await notificationClient.StartAsync();
+    }
+
+    private void MessageCallback(MessageItem message)
+    {
+        if (messageList == null) return;
+
+        messageList.Add(message);
+
+        StateHasChanged();
+    }
+
+    private async void ConnectionIdReceivedCallback(string connectionId)
+    {
+        connectionIdField = connectionId;
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7217/api/Notification/SetOnline");
+
+        myUser = new ChatUser
+            {
+                ConnectionId = connectionId,
+                UserName = myName
+            };
+
+        request.Content = await myUser.Serialize().GetHttpContentAsync();
+
+        await Http.SendAsync(request);
+
+        LoadCurrentUsers();
+
+        isInChat = true;
+
+        StateHasChanged();
+    }
+
+    private void UserConnectedCallback(ChatUser userItem)
+    {
+        if (userList == null) return;
+
+        if (userList.ContainsKey(userItem.ConnectionId))
+        {
+            userList.TryRemove(userItem.ConnectionId, out _);
+        }
+
+        userList.TryAdd(userItem.ConnectionId, userItem);
+
+        StateHasChanged();
+    }
+
+    private void UserDisconnectedCallback(ChatUser userItem)
+    {
+        if (userList == null) return;
+
+        if (userList.ContainsKey(userItem.ConnectionId))
+        {
+            userList.TryRemove(userItem.ConnectionId, out _);
+
+            StateHasChanged();
+        }
+    }
+
+    private async void LoadCurrentUsers()
+    {
+        if (myUser == null) return;
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7217/api/Notification/GetUsers");
+
+        request.Content = await myUser.Serialize().GetHttpContentAsync();
+
+        var vPostResult = await Http.SendAsync(request);
+
+        var vContentMessage = await vPostResult.GetContentMessageAsync();
+
+        if (vContentMessage.IsNullOrEmpty()) return;
+
+        var onlineUserList = vContentMessage.Deserialize<List<ChatUser>>();
+
+        if (onlineUserList == null) return;
+
+        foreach (var item in onlineUserList)
+        {
+            UserConnectedCallback(item);
+        }
+    }
+
+    private async void SendMessage(string connectionId)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7217/api/Notification/SendNotification");
+
+        var message = new MessageItem
+            {
+                ConnectionId = connectionId,
+                From = myName,
+                Message = textToSend
+            };
+
+        request.Content = await message.Serialize().GetHttpContentAsync();
+
+        await Http.SendAsync(request);
+    }
+}

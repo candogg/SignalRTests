@@ -1,21 +1,22 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using SignalRServer;
+﻿using SignalRServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddCors(o =>
+builder.Services.AddCors(options =>
 {
-    o.AddPolicy("AllowAnyOrigin", p => p
-        .WithOrigins("null")
-        .AllowAnyHeader()
-        .AllowCredentials());
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
 });
 
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+builder.Services.AddSingleton<ChatService>();
 
 var app = builder.Build();
 
@@ -24,7 +25,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.MapControllers();
-app.UseCors("AllowAnyOrigin");
+app.UseCors();
 
 app.MapHub<NotificationHub>("/notificationhub");
 

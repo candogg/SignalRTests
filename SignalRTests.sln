@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRServer", "SignalRSer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageReceiver", "MessageReceiver\MessageReceiver.csproj", "{65E235ED-8463-4C32-A065-42CA6DBABEAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRReceiverWeb", "SignalRReceiverWeb\SignalRReceiverWeb.csproj", "{B89D169C-E78F-49AC-A367-B6DFD5EBCC94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project.Shared", "Project.Shared\Project.Shared.csproj", "{27823998-BC22-406F-BA95-3B24B07A3973}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{65E235ED-8463-4C32-A065-42CA6DBABEAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65E235ED-8463-4C32-A065-42CA6DBABEAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65E235ED-8463-4C32-A065-42CA6DBABEAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B89D169C-E78F-49AC-A367-B6DFD5EBCC94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B89D169C-E78F-49AC-A367-B6DFD5EBCC94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B89D169C-E78F-49AC-A367-B6DFD5EBCC94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B89D169C-E78F-49AC-A367-B6DFD5EBCC94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27823998-BC22-406F-BA95-3B24B07A3973}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27823998-BC22-406F-BA95-3B24B07A3973}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27823998-BC22-406F-BA95-3B24B07A3973}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27823998-BC22-406F-BA95-3B24B07A3973}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

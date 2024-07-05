@@ -14,14 +14,6 @@ namespace MessageReceiver
             notificationClient = new NotificationClient(MessageCallback, ConnectionIdReceivedCallback);
         }
 
-        private async void Button1_Click(object sender, EventArgs e)
-        {
-            await notificationClient.StartAsync();
-
-            textBox1.Text = string.Empty;
-            listBox1.Items.Clear();
-        }
-
         private void MessageCallback(string message)
         {
             Invoke((MethodInvoker)delegate
@@ -36,6 +28,14 @@ namespace MessageReceiver
             {
                 textBox1.Text = connectionId;
             });
+        }
+
+        private async void Form1_Load(object sender, EventArgs e)
+        {
+            await notificationClient.StartAsync();
+
+            textBox1.Text = string.Empty;
+            listBox1.Items.Clear();
         }
     }
 }

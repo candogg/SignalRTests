@@ -2,18 +2,24 @@
 
 namespace SignalRServer
 {
-    public class NotificationHub : Hub
+    public class NotificationHub(ChatService chatService) : Hub
     {
-        public async Task SendNotification(string connectionId, string message)
-        {
-            await Clients.Client(connectionId).SendAsync("ReceiveNotification", message);
-        }
+        private readonly ChatService chatService = chatService;
 
         public override async Task OnConnectedAsync()
         {
-            var connectionId = Context.ConnectionId;
-            await Clients.Caller.SendAsync("ReceiveConnectionId", connectionId);
+            await Clients.Caller.SendAsync("ReceiveConnectionId", Context.ConnectionId);
+
             await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var disconnectedUser = await chatService.RemoveUserAsync(Context.ConnectionId);
+
+            await Clients.Others.SendAsync("UserDisconnected", disconnectedUser);
+
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }
